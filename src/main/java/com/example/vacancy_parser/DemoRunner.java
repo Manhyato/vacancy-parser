@@ -1,98 +1,54 @@
 package com.example.vacancy_parser;
 
-import com.example.vacancy_parser.bank.Account;
-import com.example.vacancy_parser.bank.AccountService;
-import com.example.vacancy_parser.bank.TransferTask;
-import com.example.vacancy_parser.concurrent.ConsumerTask;
-import com.example.vacancy_parser.concurrent.DataCollector;
-import com.example.vacancy_parser.concurrent.ProducerTask;
+import com.example.vacancy_parser.buffer.BoundedBuffer;
+import com.example.vacancy_parser.buffer.Producer;
+import com.example.vacancy_parser.buffer.Consumer;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+/**
+ * Класс для демонстрации работы потокобезопасного буфера с использованием ReentrantLock и Condition.
+ */
 @Component
 public class DemoRunner implements CommandLineRunner {
 
-    private final DataCollector collector;
-    private final AccountService accountService;
-
-    public DemoRunner(DataCollector collector, AccountService accountService) {
-        this.collector = collector;
-        this.accountService = accountService;
-    }
-
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("=== Запуск демо DataCollector ===");
-        runDataCollectorDemo();
-
-        System.out.println("\n=== Запуск демо Account transfers ===");
-        runAccountDemo();
+        System.out.println("=== Запуск демо BoundedBuffer (ReentrantLock + Condition) ===");
+        runBufferDemo();
     }
 
-    private void runDataCollectorDemo() throws InterruptedException {
-        int producers = 4;
-        int consumers = 3;
-        int itemsEach = 500; // всего 2000 элементов
-        ExecutorService prodPool = Executors.newFixedThreadPool(producers);
-        ExecutorService consPool = Executors.newFixedThreadPool(consumers);
+    private void runBufferDemo() throws InterruptedException {
+        final int bufferSize = 10;
+        final int producerCount = 3;
+        final int consumerCount = 3;
+        final int itemsPerProducer = 50;
 
-        // старт consumers
-        List<ConsumerTask> consumerTasks = new ArrayList<>();
-        for (int i = 0; i < consumers; i++) {
-            ConsumerTask ct = new ConsumerTask(collector, i);
-            consumerTasks.add(ct);
-            consPool.submit(ct);
-        }
+        BoundedBuffer<Integer> buffer = new BoundedBuffer<>(bufferSize);
+        ExecutorService pool = Executors.newFixedThreadPool(producerCount + consumerCount);
 
         long t0 = System.currentTimeMillis();
-        for (int i = 0; i < producers; i++) {
-            prodPool.submit(new ProducerTask(collector, i, itemsEach));
+
+        // Запускаем продюсеров
+        for (int i = 0; i < producerCount; i++) {
+            pool.submit(new Producer(buffer, i, itemsPerProducer));
         }
 
-        prodPool.shutdown();
-        prodPool.awaitTermination(30, TimeUnit.SECONDS);
-
-        // Дадим немного времени на обработку
-        Thread.sleep(2000);
-
-        // остановим consumers корректно
-        for (ConsumerTask ct : consumerTasks) ct.stop();
-        consPool.shutdown();
-        consPool.awaitTermination(10, TimeUnit.SECONDS);
-
-        long t1 = System.currentTimeMillis();
-        System.out.println("DataCollector snapshot: " + collector.snapshot());
-        System.out.println("Время выполнения (производители+потребители): " + (t1 - t0) + " ms");
-    }
-
-    private void runAccountDemo() throws InterruptedException {
-        int accountsCount = 10;
-        int initial = 1000;
-        List<Account> accounts = new ArrayList<>();
-        long total = 0;
-        for (int i = 0; i < accountsCount; i++) {
-            accounts.add(new Account(i + 1, initial));
-            total += initial;
+        // Запускаем консумеров
+        for (int i = 0; i < consumerCount; i++) {
+            pool.submit(new Consumer(buffer, i));
         }
 
-        int transferThreads = 8;
-        int transfersPerThread = 5000;
-        ExecutorService pool = Executors.newFixedThreadPool(transferThreads);
-        long t0 = System.currentTimeMillis();
-        for (int i = 0; i < transferThreads; i++) {
-            pool.submit(new TransferTask(accountService, accounts, transfersPerThread));
-        }
         pool.shutdown();
         pool.awaitTermination(1, TimeUnit.MINUTES);
-        long t1 = System.currentTimeMillis();
 
-        // проверка целостности: сумма балансов должна равняться total
-        long sum = accounts.stream().mapToLong(Account::getBalance).sum();
-        System.out.println("Ожидаемая суммарная сумма: " + total + ", реальная: " + sum);
-        System.out.println("Время переводов: " + (t1 - t0) + " ms");
+        long t1 = System.currentTimeMillis();
+        System.out.println("=== Демо завершено ===");
+        System.out.println("Время выполнения: " + (t1 - t0) + " ms");
     }
 }
+
