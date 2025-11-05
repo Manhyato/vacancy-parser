@@ -1,19 +1,16 @@
 package com.example.vacancy_parser;
 
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
+/**
+ * Главный класс Spring Boot приложения.
+ * Здесь только старт приложения, вся логика выполняется в DemoRunner.
+ */
 @SpringBootApplication
 public class VacancyParserApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(VacancyParserApplication.class, args);
-    }
-
-    @Bean
-    public CommandLineRunner demo(StreamComparisonService service) {
-        return args -> service.runComparison();
     }
 }
