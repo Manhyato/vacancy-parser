@@ -1,80 +1,37 @@
 package com.example.vacancy_parser;
 
-import com.example.vacancy_parser.concurrency.AtomicCache;
-import com.example.vacancy_parser.concurrency.AtomicCounter;
-import com.example.vacancy_parser.concurrency.VolatileStopExample;
+import com.example.vacancy_parser.deadlock.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
+/**
+ * Запускает демонстрации Deadlock, Livelock и Starvation.
+ */
 @Component
 public class DemoRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("=== Демонстрация volatile и atomic переменных ===");
+        /* 
+        System.out.println("=== Демонстрация Deadlock ===");
+        DeadlockDemo deadlockDemo = new DeadlockDemo();
+        deadlockDemo.startDeadlock();
+        */
 
-        runVolatileDemo();
-        runAtomicCounterDemo();
-        runAtomicCacheDemo();
-    }
+        // === После проверки Deadlock закомментируем: ===
 
-    private void runVolatileDemo() throws InterruptedException {
-        System.out.println("\n--- Volatile Stop Example ---");
-        VolatileStopExample task = new VolatileStopExample();
-        Thread t = new Thread(task);
-        t.start();
+        
+        System.out.println("=== Демонстрация Livelock ===");
+        LivelockDemo livelockDemo = new LivelockDemo();
+        livelockDemo.startLivelock();
 
-        Thread.sleep(1000);
-        System.out.println("Останавливаем поток...");
-        task.stop();
-        t.join();
-    }
+        Thread.sleep(2000);
 
-    private void runAtomicCounterDemo() throws InterruptedException {
-        System.out.println("\n--- Atomic Counter Example ---");
-        AtomicCounter counter = new AtomicCounter();
+        System.out.println("=== Демонстрация Starvation ===");
+        StarvationDemo starvationDemo = new StarvationDemo();
+        starvationDemo.startStarvation();
 
-        int threads = 10;
-        int incrementsPerThread = 100_000;
-
-        ExecutorService pool = Executors.newFixedThreadPool(threads);
-        for (int i = 0; i < threads; i++) {
-            pool.submit(() -> {
-                for (int j = 0; j < incrementsPerThread; j++) {
-                    counter.increment();
-                }
-            });
-        }
-
-        pool.shutdown();
-        pool.awaitTermination(10, TimeUnit.SECONDS);
-
-        System.out.println("Ожидаемое значение: " + (threads * incrementsPerThread));
-        System.out.println("Реальное значение:   " + counter.getValue());
-    }
-
-    private void runAtomicCacheDemo() throws InterruptedException {
-        System.out.println("\n--- Atomic Cache Example ---");
-        AtomicCache cache = new AtomicCache();
-
-        ExecutorService pool = Executors.newFixedThreadPool(5);
-        for (int i = 0; i < 5; i++) {
-            final int id = i;
-            pool.submit(() -> {
-                String value = cache.getOrCreate("CreatedByThread-" + id);
-                System.out.println("Поток " + id + " получил значение: " + value);
-            });
-        }
-
-        pool.shutdown();
-        pool.awaitTermination(2, TimeUnit.SECONDS);
-
-        System.out.println("Финальное значение в кэше: " + cache.getValue());
+        System.out.println("=== Демонстрации завершены ===");
     }
 }
-
 
