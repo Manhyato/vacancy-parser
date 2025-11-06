@@ -4,37 +4,26 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import com.example.vacancy_parser.asyncfetch.AsyncDataFetcher;
 import com.example.vacancy_parser.asyncfetch.FinalResult;
-/* import com.example.vacancy_parser.asyncfetch.ExternalServiceSimulator; */
 
-import java.util.Arrays;
-import java.util.List;
+import com.example.vacancy_parser.forkjoin.ForkJoinDemo;
 
-@Component
-public class DemoRunner implements CommandLineRunner {
+public class DemoRunner {
 
-    private final AsyncDataFetcher dataFetcher;
+    public static void main(String[] args) {
+        System.out.println("=== Запуск всех демонстраций ===\n");
 
-    public DemoRunner(AsyncDataFetcher dataFetcher) {
-        this.dataFetcher = dataFetcher;
-    }
+        // 1. Асинхронная выборка данных (предыдущее задание)
+        AsyncDataFetcher fetcher = new AsyncDataFetcher();
+        fetcher.fetchAllDataAsync(java.util.List.of("P1", "P2", "P3", "P4", "P5"));
+        fetcher.shutdown();
 
-    @Override
-    public void run(String... args) {
-        System.out.println("=== Демонстрация CompletableFuture с собственным Executor ===");
+        // 2. Подсчёт агрегированных элементов через ForkJoin
+        ForkJoinDemo.runDemo();
 
-        List<String> ids = Arrays.asList("P1", "P2", "P3", "P4", "P5");
-        long start = System.currentTimeMillis();
-
-        List<FinalResult> results = dataFetcher.fetchAllDataAsync(ids);
-
-        results.forEach(System.out::println);
-
-        System.out.println("Время выполнения: " + (System.currentTimeMillis() - start) + " мс");
-        dataFetcher.shutdown();
-
-        System.out.println("=== Демонстрация завершена ===");
+        System.out.println("\n=== Все демонстрации завершены ===");
     }
 }
+
 
 
 
