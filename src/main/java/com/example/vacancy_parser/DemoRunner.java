@@ -1,18 +1,18 @@
 package com.example.vacancy_parser;
 
-import com.example.vacancy_parser.concurrentcache.EventSystemDemo;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+import com.example.vacancy_parser.virtualthreads.VirtualVsPlatformDemo;
 
-@Component
-public class DemoRunner implements CommandLineRunner {
-    @Override
-    public void run(String... args) throws Exception {
-        System.out.println("=== Демонстрация многопоточной системы событий ===");
-        EventSystemDemo.runDemo();
-        System.out.println("=== Демонстрация завершена ===");
+public class DemoRunner {
+
+    public static void main(String[] args) throws Exception {
+        System.out.println("=== Запуск всех демонстраций ===\n");
+        // Сравнение виртуальных и обычных потоков
+        VirtualVsPlatformDemo.main(null);
+
+        System.out.println("\n=== Все демонстрации завершены ===");
     }
 }
+
 
 
 
