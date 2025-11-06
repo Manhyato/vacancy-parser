@@ -1,23 +1,33 @@
 package com.example.vacancy_parser;
 
-import com.example.vacancy_parser.async.UrlTestRunner;
+import com.example.vacancy_parser.executor.*;
 
-public class DemoRunner {
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
-    public static void main(String[] args) {
-        System.out.println("=== Запуск демонстрации многопоточности и сетевых операций ===\n");
+@Component
+public class DemoRunner implements CommandLineRunner {
+
+    @Override
+    public void run(String... args) {
+        System.out.println("=== Запуск демонстрации ExecutorService ===\n");
+
+        FutureDemo.runDemo();
+        InvokeAllDemo.runDemo();
+        ScheduledDemo.runDemo();
+
+        PeriodicDataAggregator aggregator = new PeriodicDataAggregator();
+        aggregator.startAggregation();
 
         try {
-            // 🔹 Демонстрация асинхронных HTTP-запросов
-            System.out.println("=== Демонстрация асинхронных HTTP-запросов через ThreadPoolExecutor ===");
-            UrlTestRunner.runDemo();
-
-            System.out.println("\n=== Все демонстрации завершены успешно ===");
-
-        } catch (Exception e) {
-            System.err.println("Произошла ошибка во время выполнения демонстрации: " + e.getMessage());
+            Thread.sleep(15000);
+        } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            aggregator.shutdown();
+            System.out.println("\n=== Все демонстрации завершены ===");
         }
     }
 }
+
 
