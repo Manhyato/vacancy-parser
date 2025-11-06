@@ -1,37 +1,23 @@
 package com.example.vacancy_parser;
 
-import com.example.vacancy_parser.deadlock.*;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+import com.example.vacancy_parser.async.UrlTestRunner;
 
-/**
- * Запускает демонстрации Deadlock, Livelock и Starvation.
- */
-@Component
-public class DemoRunner implements CommandLineRunner {
+public class DemoRunner {
 
-    @Override
-    public void run(String... args) throws Exception {
-        /* 
-        System.out.println("=== Демонстрация Deadlock ===");
-        DeadlockDemo deadlockDemo = new DeadlockDemo();
-        deadlockDemo.startDeadlock();
-        */
+    public static void main(String[] args) {
+        System.out.println("=== Запуск демонстрации многопоточности и сетевых операций ===\n");
 
-        // === После проверки Deadlock закомментируем: ===
+        try {
+            // 🔹 Демонстрация асинхронных HTTP-запросов
+            System.out.println("=== Демонстрация асинхронных HTTP-запросов через ThreadPoolExecutor ===");
+            UrlTestRunner.runDemo();
 
-        
-        System.out.println("=== Демонстрация Livelock ===");
-        LivelockDemo livelockDemo = new LivelockDemo();
-        livelockDemo.startLivelock();
+            System.out.println("\n=== Все демонстрации завершены успешно ===");
 
-        Thread.sleep(2000);
-
-        System.out.println("=== Демонстрация Starvation ===");
-        StarvationDemo starvationDemo = new StarvationDemo();
-        starvationDemo.startStarvation();
-
-        System.out.println("=== Демонстрации завершены ===");
+        } catch (Exception e) {
+            System.err.println("Произошла ошибка во время выполнения демонстрации: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
 
