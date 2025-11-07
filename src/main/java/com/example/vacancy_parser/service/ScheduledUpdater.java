@@ -15,7 +15,7 @@ public class ScheduledUpdater {
     // каждые 5 минут (300000 мс)
     @Scheduled(fixedRate = 300000)
     public void scheduledUpdate() {
-        System.out.println("🔁 Плановое обновление вакансий...");
+        System.out.println(" Плановое обновление вакансий...");
         vacancyService.fetchAndSaveVacancies();
     }
 }

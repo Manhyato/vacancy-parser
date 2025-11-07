@@ -24,8 +24,7 @@ public class VacancyService {
     public void fetchAndSaveVacancies() {
         vacancyRepository.deleteAll();
         System.out.println("Все старые вакансии удалены.");
-        List<VacancyDTO> dtos = asyncParserService.parseAllSources();
-
+        List<VacancyDTO> dtos = asyncParserService.parseAllSources().join();
             List<Vacancy> entities = dtos.stream()
                 .map(dto -> new Vacancy(
                 dto.getTitle(),
