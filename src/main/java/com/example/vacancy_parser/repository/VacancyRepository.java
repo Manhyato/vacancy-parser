@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface VacancyRepository extends JpaRepository<Vacancy, Long> {
 
-    // Поиск по названию вакансии (пример)
+    // Поиск по названию вакансии 
     List<Vacancy> findByTitleContainingIgnoreCase(String title);
 
     // Поиск по городу

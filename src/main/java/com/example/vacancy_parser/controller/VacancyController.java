@@ -3,18 +3,14 @@ package com.example.vacancy_parser.controller;
 import com.example.vacancy_parser.model.VacancyDTO;
 import com.example.vacancy_parser.service.VacancyService;
 import com.example.vacancy_parser.service.DataAggregatorService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * REST контроллер для работы с вакансиями:
- * - запуск парсинга вручную
- * - получение сохранённых данных
- * - получение агрегированных / отсортированных результатов
- */
-@RestController
-@RequestMapping("/api/vacancies")
+@Controller
 public class VacancyController {
 
     private final VacancyService vacancyService;
@@ -25,39 +21,40 @@ public class VacancyController {
         this.dataAggregatorService = dataAggregatorService;
     }
 
-    /**
-     * Ручной запуск парсинга вакансий (асинхронно)
-     */
-    @PostMapping("/parse")
-    public String parseVacancies() {
-        vacancyService.fetchAndSaveVacancies();
-        return "Парсинг запущен и данные сохранены в базу.";
+    // Главная страница
+    @GetMapping("/")
+    public String home(Model model) {
+        List<VacancyDTO> vacancies = vacancyService.getAllVacancies();
+        model.addAttribute("vacancies", vacancies);
+        return "index"; // из templates/index.html
     }
 
-    /**
-     * Получить все вакансии из базы
-     */
-    @GetMapping("/results")
+    // API эндпоинты
+    @PostMapping("/api/vacancies/parse")
+    @ResponseBody
+    public ResponseEntity<String> parseVacancies() {
+        vacancyService.fetchAndSaveVacancies();
+        return ResponseEntity.ok("Парсинг запущен и данные сохранены в базу данных.");
+    }
+
+    @GetMapping("/api/vacancies/results")
+    @ResponseBody
     public List<VacancyDTO> getAllVacancies() {
         return vacancyService.getAllVacancies();
     }
 
-    /**
-     * Получить агрегированные и отсортированные вакансии
-     * (пример: /api/vacancies/sorted?sortBy=salary)
-     */
-    @GetMapping("/sorted")
+    @GetMapping("/api/vacancies/sorted")
+    @ResponseBody
     public List<VacancyDTO> getSortedVacancies(@RequestParam(defaultValue = "datePosted") String sortBy) {
         return dataAggregatorService.getSortedVacancies(sortBy);
     }
 
-    /**
-     * Обновить данные вручную (например, если нужно перезапустить по расписанию)
-     */
-    @PutMapping("/update")
+    @PutMapping("/api/vacancies/update")
+    @ResponseBody
     public String updateVacancies() {
         vacancyService.fetchAndSaveVacancies();
         return "Обновление вакансий выполнено успешно.";
     }
 }
+
 

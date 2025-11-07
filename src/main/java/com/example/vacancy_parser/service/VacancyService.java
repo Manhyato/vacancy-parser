@@ -22,6 +22,8 @@ public class VacancyService {
 
     @Transactional
     public void fetchAndSaveVacancies() {
+        vacancyRepository.deleteAll();
+        System.out.println("Все старые вакансии удалены.");
         List<VacancyDTO> dtos = asyncParserService.parseAllSources();
 
             List<Vacancy> entities = dtos.stream()
@@ -37,7 +39,7 @@ public class VacancyService {
             .collect(Collectors.toList());
 
         vacancyRepository.saveAll(entities);
-        System.out.println("охранено " + entities.size() + " вакансий в базу данных.");
+        System.out.println("Обновление завершено. Сохранено " + entities.size() + " вакансий в базу данных.");
     }
 
     public List<VacancyDTO> getAllVacancies() {

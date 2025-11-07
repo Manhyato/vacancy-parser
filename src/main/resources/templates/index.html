@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Vacancy Parser</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            margin: 40px;
+        }
+        h1 {
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background: #eaeaea;
+        }
+        td {
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📊 Vacancy Parser</h1>
+
+<div style="text-align:center;">
+    <button onclick="updateVacancies()">🔄 Обновить вакансии</button>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Название</th>
+        <th>Компания</th>
+        <th>Город</th>
+        <th>Зарплата</th>
+        <th>Источник</th>
+        <th>Дата</th>
+    </tr>
+    </thead>
+    <tbody id="vacancyTable">
+    <tr th:each="vacancy : ${vacancies}">
+        <td th:text="${vacancy.title}"></td>
+        <td th:text="${vacancy.company}"></td>
+        <td th:text="${vacancy.city}"></td>
+        <td th:text="${vacancy.salary}"></td>
+        <td th:text="${vacancy.source}"></td>
+        <td th:text="${vacancy.datePosted}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    async function updateVacancies() {
+        const response = await fetch('/api/vacancies/parse', { method: 'POST' });
+        const message = await response.text();
+        alert(message);
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
