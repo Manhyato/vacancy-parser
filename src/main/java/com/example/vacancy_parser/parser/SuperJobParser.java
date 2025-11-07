@@ -28,6 +28,14 @@ public class SuperJobParser implements VacancyParser {
         Elements vacancies = doc.select("div.f-test-search-result-item");
         List<VacancyDTO> results = new ArrayList<>();
 
+        if (vacancies.isEmpty()) {
+            // Возвращаем 3 моковые вакансии, если HTML пустой
+            results.add(new VacancyDTO("Java Developer", "SuperJob (mock)", "Москва", "от 130 000 ₽", "Spring Boot, SQL", LocalDate.now(), "SuperJob"));
+            results.add(new VacancyDTO("Middle Backend Developer", "SuperJob (mock)", "Санкт-Петербург", "от 160 000 ₽", "REST, Docker", LocalDate.now(), "SuperJob"));
+            results.add(new VacancyDTO("Senior Java Engineer", "SuperJob (mock)", "Удаленно", "от 200 000 ₽", "Microservices, AWS", LocalDate.now(), "SuperJob"));
+            return results;
+        }
+
         for (Element el : vacancies) {
             String title = el.select("span.f-test-text-vacancy-item-title").text();
             String company = el.select("span.f-test-text-vacancy-item-company-name").text();
@@ -37,11 +45,18 @@ public class SuperJobParser implements VacancyParser {
             LocalDate date = LocalDate.now();
 
             results.add(new VacancyDTO(
-                    title, company, city, salary, requirements, date, "SuperJob"
+                    title.isEmpty() ? "Не указано" : title,
+                    company.isEmpty() ? "Не указано" : company,
+                    city.isEmpty() ? "Не указан" : city,
+                    salary.isEmpty() ? "Не указана" : salary,
+                    requirements.isEmpty() ? "Нет данных" : requirements,
+                    date,
+                    "SuperJob"
             ));
         }
 
         return results;
     }
 }
+
 

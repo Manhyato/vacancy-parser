@@ -28,6 +28,14 @@ public class HabrParser implements VacancyParser {
         Elements vacancies = doc.select("div.vacancy-card");
         List<VacancyDTO> results = new ArrayList<>();
 
+        if (vacancies.isEmpty()) {
+            // Если парсинг не удался — возвращаем 3 заглушки
+            results.add(new VacancyDTO("Java Developer", "Habr (mock)", "Москва", "от 120 000 ₽", "Spring, Java", LocalDate.now(), "Habr Career"));
+            results.add(new VacancyDTO("Backend Engineer", "Habr (mock)", "Санкт-Петербург", "от 150 000 ₽", "Microservices, SQL", LocalDate.now(), "Habr Career"));
+            results.add(new VacancyDTO("Fullstack Developer", "Habr (mock)", "Удаленно", "от 180 000 ₽", "React, Java", LocalDate.now(), "Habr Career"));
+            return results;
+        }
+
         for (Element el : vacancies) {
             String title = el.select("div.vacancy-card__title").text();
             String company = el.select("div.vacancy-card__company-title").text();
@@ -37,12 +45,20 @@ public class HabrParser implements VacancyParser {
             LocalDate date = LocalDate.now();
 
             results.add(new VacancyDTO(
-                    title, company, city, salary, requirements, date, "Habr Career"
+                    title.isEmpty() ? "Не указано" : title,
+                    company.isEmpty() ? "Не указано" : company,
+                    city.isEmpty() ? "Не указан" : city,
+                    salary.isEmpty() ? "Не указана" : salary,
+                    requirements.isEmpty() ? "Нет данных" : requirements,
+                    date,
+                    "Habr Career"
             ));
         }
 
         return results;
     }
 }
+
+
 
 
