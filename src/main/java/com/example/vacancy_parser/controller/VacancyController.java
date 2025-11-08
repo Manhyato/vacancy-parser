@@ -8,7 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class VacancyController {
@@ -26,10 +28,10 @@ public class VacancyController {
     public String home(Model model) {
         List<VacancyDTO> vacancies = vacancyService.getAllVacancies();
         model.addAttribute("vacancies", vacancies);
-        return "index"; // из templates/index.html
+        return "index";
     }
 
-    // API эндпоинты
+    // Запуск парсинга вручную
     @PostMapping("/api/vacancies/parse")
     @ResponseBody
     public ResponseEntity<String> parseVacancies() {
@@ -37,24 +39,54 @@ public class VacancyController {
         return ResponseEntity.ok("Парсинг запущен и данные сохранены в базу данных.");
     }
 
+    // Универсальный эндпоинт: фильтрация + сортировка
     @GetMapping("/api/vacancies/results")
     @ResponseBody
-    public List<VacancyDTO> getAllVacancies() {
-        return vacancyService.getAllVacancies();
-    }
+    public List<VacancyDTO> getFilteredAndSortedVacancies(
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String company,
+            @RequestParam(defaultValue = "datePosted") String sortBy) {
 
-    @GetMapping("/api/vacancies/sorted")
-    @ResponseBody
-    public List<VacancyDTO> getSortedVacancies(@RequestParam(defaultValue = "datePosted") String sortBy) {
-        return dataAggregatorService.getSortedVacancies(sortBy);
-    }
+        List<VacancyDTO> vacancies = vacancyService.getAllVacancies();
 
-    @PutMapping("/api/vacancies/update")
-    @ResponseBody
-    public String updateVacancies() {
-        vacancyService.fetchAndSaveVacancies();
-        return "Обновление вакансий выполнено успешно.";
+        if (city != null && !city.isEmpty()) {
+            vacancies = vacancies.stream()
+                    .filter(v -> v.getCity() != null && v.getCity().equalsIgnoreCase(city))
+                    .collect(Collectors.toList());
+        }
+
+        if (company != null && !company.isEmpty()) {
+            vacancies = vacancies.stream()
+                    .filter(v -> v.getCompany() != null && v.getCompany().equalsIgnoreCase(company))
+                    .collect(Collectors.toList());
+        }
+
+        Comparator<VacancyDTO> comparator;
+
+        switch (sortBy.toLowerCase()) {
+            case "salary":
+                comparator = Comparator.comparing(VacancyDTO::getSalary,
+                        Comparator.nullsLast(String::compareTo));
+                break;
+            case "company":
+                comparator = Comparator.comparing(VacancyDTO::getCompany,
+                        Comparator.nullsLast(String::compareTo));
+                break;
+            case "city":
+                comparator = Comparator.comparing(VacancyDTO::getCity,
+                        Comparator.nullsLast(String::compareTo));
+                break;
+            case "dateposted":
+            default:
+                comparator = Comparator.comparing(VacancyDTO::getDatePosted,
+                        Comparator.nullsLast((a, b) -> b.compareTo(a)));
+                break;
+        }
+
+        return vacancies.stream().sorted(comparator).collect(Collectors.toList());
     }
 }
+
+
 
 

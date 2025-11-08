@@ -18,8 +18,8 @@ public class DataAggregatorService {
     }
 
     /**
-     * 🔹 Универсальный метод сортировки вакансий
-     * sortBy может быть: "salary", "datePosted", "company", "city"
+     * Универсальная сортировка вакансий по параметрам:
+     * salary, datePosted, company, city
      */
     public List<VacancyDTO> getSortedVacancies(String sortBy) {
         List<VacancyDTO> vacancies = vacancyRepository.findAll().stream()
@@ -38,21 +38,17 @@ public class DataAggregatorService {
 
         switch (sortBy.toLowerCase()) {
             case "salary":
-                comparator = Comparator.comparing(VacancyDTO::getSalary,
-                        Comparator.nullsLast(String::compareTo));
+                comparator = Comparator.comparing(VacancyDTO::getSalary, Comparator.nullsLast(String::compareTo));
                 break;
             case "company":
-                comparator = Comparator.comparing(VacancyDTO::getCompany,
-                        Comparator.nullsLast(String::compareTo));
+                comparator = Comparator.comparing(VacancyDTO::getCompany, Comparator.nullsLast(String::compareTo));
                 break;
             case "city":
-                comparator = Comparator.comparing(VacancyDTO::getCity,
-                        Comparator.nullsLast(String::compareTo));
+                comparator = Comparator.comparing(VacancyDTO::getCity, Comparator.nullsLast(String::compareTo));
                 break;
             case "dateposted":
             default:
-                comparator = Comparator.comparing(VacancyDTO::getDatePosted,
-                        Comparator.nullsLast((a, b) -> b.compareTo(a))); // последние сверху
+                comparator = Comparator.comparing(VacancyDTO::getDatePosted, Comparator.nullsLast((a, b) -> b.compareTo(a)));
                 break;
         }
 
@@ -62,10 +58,10 @@ public class DataAggregatorService {
     }
 
     /**
-     * 🔹 Пример дополнительного фильтра по городу
+     * Фильтр по городу
      */
     public List<VacancyDTO> filterByCity(String city) {
-        return vacancyRepository.findAll().stream()
+        return vacancyRepository.findAll().parallelStream()
                 .filter(v -> v.getCity() != null && v.getCity().equalsIgnoreCase(city))
                 .map(v -> new VacancyDTO(
                         v.getTitle(),
@@ -78,6 +74,25 @@ public class DataAggregatorService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Фильтр по компании
+     */
+    public List<VacancyDTO> filterByCompany(String company) {
+        return vacancyRepository.findAll().parallelStream()
+                .filter(v -> v.getCompany() != null && v.getCompany().equalsIgnoreCase(company))
+                .map(v -> new VacancyDTO(
+                        v.getTitle(),
+                        v.getCompany(),
+                        v.getCity(),
+                        v.getSalary(),
+                        v.getRequirements(),
+                        v.getDatePosted(),
+                        v.getSource()
+                ))
+                .collect(Collectors.toList());
+    }
 }
+
 
 

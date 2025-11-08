@@ -2,60 +2,98 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Vacancy Parser</title>
+    <title>Парсер вакансий</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Парсер вакансий</h1>
-        <p>Нажмите кнопку, чтобы запустить сбор данных.</p>
+<div class="container">
+    <h1>Парсер вакансий</h1>
 
-        <button id="updateBtn">🔄 Обновить вакансии</button>
-
-        <h2>📋 Список вакансий</h2>
-        <table id="vacancyTable">
-            <thead>
-                <tr>
-                    <th>Название</th>
-                    <th>Компания</th>
-                    <th>Город</th>
-                    <th>Зарплата</th>
-                    <th>Источник</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <div class="filters">
+        <input type="text" id="filterCity" placeholder="Фильтр по городу">
+        <input type="text" id="filterCompany" placeholder="Фильтр по компании">
+        <select id="sortBy">
+            <option value="datePosted">Сортировать по дате</option>
+            <option value="salary">Сортировать по зарплате</option>
+            <option value="company">Сортировать по компании</option>
+            <option value="city">Сортировать по городу</option>
+        </select>
+        <button onclick="applyFilters()">Применить</button>
+        <button class="refresh" onclick="refreshData()">Обновить вакансии</button>
     </div>
 
-    <script>
-        const updateBtn = document.getElementById("updateBtn");
-        const tbody = document.querySelector("#vacancyTable tbody");
+    <table>
+        <thead>
+        <tr>
+            <th>Название</th>
+            <th>Компания</th>
+            <th>Город</th>
+            <th>Зарплата</th>
+            <th>Дата</th>
+            <th>Источник</th>
+        </tr>
+        </thead>
+        <tbody id="vacanciesBody"></tbody>
+    </table>
+</div>
 
-        updateBtn.addEventListener("click", async () => {
-            updateBtn.disabled = true;
-            updateBtn.textContent = "Парсинг...";
-            await fetch("/api/vacancies/parse", { method: "POST" });
-            await loadVacancies();
-            updateBtn.disabled = false;
-            updateBtn.textContent = "Обновить вакансии";
-        });
+<script>
+    async function loadVacancies(url = '/api/vacancies/results') {
+        const response = await fetch(url);
+        const data = await response.json();
+        const tbody = document.getElementById('vacanciesBody');
+        tbody.innerHTML = '';
 
-        async function loadVacancies() {
-            const res = await fetch("/api/vacancies/results");
-            const data = await res.json();
-            tbody.innerHTML = data.map(v => `
+        data.forEach(vacancy => {
+            const row = `
                 <tr>
-                    <td>${v.title}</td>
-                    <td>${v.company}</td>
-                    <td>${v.city}</td>
-                    <td>${v.salary}</td>
-                    <td>${v.source}</td>
+                    <td>${vacancy.title}</td>
+                    <td>${vacancy.company}</td>
+                    <td>${vacancy.city}</td>
+                    <td>${vacancy.salary}</td>
+                    <td>${vacancy.datePosted}</td>
+                    <td>${vacancy.source}</td>
                 </tr>
-            `).join("");
-        }
+            `;
+            tbody.innerHTML += row;
+        });
+    }
 
-        loadVacancies();
-    </script>
+    async function applyFilters() {
+        const city = document.getElementById('filterCity').value.trim();
+        const company = document.getElementById('filterCompany').value.trim();
+        const sortBy = document.getElementById('sortBy').value;
+
+        let url = `/api/vacancies/results`;
+        const params = new URLSearchParams();
+
+        if (city) params.append('city', city);
+        if (company) params.append('company', company);
+        if (sortBy) params.append('sortBy', sortBy);
+
+        url += '?' + params.toString();
+        await loadVacancies(url);
+    }
+
+    async function refreshData() {
+        const btn = document.querySelector('.refresh');
+        btn.disabled = true;
+        btn.innerText = 'Обновление...';
+
+        const res = await fetch('/api/vacancies/parse', { method: 'POST' });
+        const text = await res.text();
+
+        alert(text);
+        await loadVacancies();
+
+        btn.disabled = false;
+        btn.innerText = 'Обновить вакансии';
+    }
+
+    loadVacancies();
+</script>
 </body>
 </html>
+
+
 
