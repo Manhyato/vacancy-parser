@@ -18,6 +18,7 @@ import java.util.Scanner;
 public class HhParser implements VacancyParser {
 
     private static final String API_URL = "https://api.hh.ru/vacancies?text=%s&area=1&page=0&per_page=20";
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
     public List<VacancyDTO> parse(String searchQuery) throws IOException {
@@ -39,7 +40,6 @@ public class HhParser implements VacancyParser {
             }
 
             // Разбираем JSON
-            ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(jsonText.toString());
             JsonNode items = root.path("items");
 

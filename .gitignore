@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Compiled classes / profiler artifacts ###
+*.class
+vacancy.jfr

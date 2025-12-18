@@ -52,7 +52,7 @@ public class DataAggregatorService {
                 break;
         }
 
-        return vacancies.parallelStream()
+        return vacancies.stream()
                 .sorted(comparator)
                 .collect(Collectors.toList());
     }
@@ -61,7 +61,7 @@ public class DataAggregatorService {
      * Фильтр по городу
      */
     public List<VacancyDTO> filterByCity(String city) {
-        return vacancyRepository.findAll().parallelStream()
+        return vacancyRepository.findAll().stream()
                 .filter(v -> v.getCity() != null && v.getCity().equalsIgnoreCase(city))
                 .map(v -> new VacancyDTO(
                         v.getTitle(),
@@ -79,7 +79,7 @@ public class DataAggregatorService {
      * Фильтр по компании
      */
     public List<VacancyDTO> filterByCompany(String company) {
-        return vacancyRepository.findAll().parallelStream()
+        return vacancyRepository.findAll().stream()
                 .filter(v -> v.getCompany() != null && v.getCompany().equalsIgnoreCase(company))
                 .map(v -> new VacancyDTO(
                         v.getTitle(),
